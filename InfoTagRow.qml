@@ -14,10 +14,10 @@ RowLayout{
          {
           id:lblNameContainer
           Layout.fillWidth: false
-          Layout.preferredWidth: parent.width * 0.30
+          Layout.preferredWidth: parent.width * 0.20
           Layout.fillHeight: true
           radius: 2
-          color: "#daf8e3"//"#daf8e3"
+          color: "transparent"//"#daf8e3"
 
            Rectangle
                  {
@@ -31,7 +31,7 @@ RowLayout{
                  {
                  anchors.fill: parent
                  fontSizeMode: Text.Fit
-                 color: "#0086ad"
+                 color: "#3b5998" //#3b5998
                  text: lblName
                  font.pixelSize: 20
                  minimumPixelSize: 15
@@ -44,10 +44,10 @@ RowLayout{
         {
        id:lblValueContainer
        Layout.fillWidth: false
-       Layout.preferredWidth: parent.width * 0.70
+       Layout.preferredWidth: parent.width * 0.80
        Layout.fillHeight: true
        radius: 2
-       color: "#daf8e3"//"#daf8e3"
+       color: "transparent"//"#daf8e3"
 
              Rectangle
                 {
@@ -61,7 +61,7 @@ RowLayout{
                 {
                  anchors.fill: parent
                 fontSizeMode: Text.Fit
-                color:"#00c2c7"
+                color:"#8b9dc3"
                 text: lblValue
                 font.pixelSize: 20
                 minimumPixelSize: 10
@@ -71,4 +71,6 @@ RowLayout{
                 }
         }
 
-}
+   }
+
+

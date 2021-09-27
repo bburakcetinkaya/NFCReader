@@ -1,6 +1,9 @@
 #include <QDebug>
+#include <QByteArray>
+#include <QString>
 #include <QNdefMessage>
 #include <QNdefNfcTextRecord>
+#include <QNdefRecord>
 #include "NFCReader.h"
 
 //static const QByteArray key_A = "FF 88 00 02 60 D3 F7 D3 F7 D3 F7";
@@ -19,14 +22,26 @@ NFCReader::NFCReader(QObject *parent) : QObject(parent)
   ,m_targetAccessMethod {""}
   ,m_targetType {""}
   ,m_targetError {""}
-  ,m_targetBlock  {"empty"}
-  ,m_targetBlock2 {"empty"}
-  ,m_targetBlock3 {"empty"}
-  ,m_targetBlock4 {"empty"}
-  ,m_targetBlock5 {"empty"}
-  ,m_targetBlock6 {"empty"}
+  ,m_targetBlock  {"Could not read"}
+  ,m_targetBlock2 {"Could not read"}
+  ,m_targetBlock3 {"Could not read"}
+  ,m_targetBlock4 {"Could not read"}
+  ,m_targetBlock5 {"Could not read"}
+  ,m_targetBlock6 {"Could not read"}
+  ,m_targetBlock7 {"Could not read"}
+  ,m_targetBlock8 {"Could not read"}
+  ,m_targetBlock9 {"Could not read"}
+  ,m_targetBlock10{"Could not read"}
+  ,m_targetBlock11 {"Could not read"}
 
-    {
+  ,m_targetBlockAsString{"Could not read"}
+  //ndef message read
+  ,m_doHaveNdefMessage {false}
+  ,m_readNdefMessage {}
+
+  ,m_readonce {0}
+
+{
     m_isNFCSupported = nfcRead->isSupported();
     emit isNFCSupportedChanged();
 
@@ -38,6 +53,11 @@ NFCReader::NFCReader(QObject *parent) : QObject(parent)
     connect(nfcRead,&QNearFieldManager::targetDetected,this,&NFCReader::infoTag);
     connect(nfcRead,&QNearFieldManager::targetDetected,this,&NFCReader::targetDetected);
     connect(nfcRead,&QNearFieldManager::targetLost,this,&NFCReader::targetLost);
+
+  //  connect(nfcRead, &QNearFieldTarget::ndefMessageRead, this, &NFCReader::ndefMessageRead);
+  //  Q_PROPERTY(int number READ setreadonce WRITE setreadonce NOTIFY readoncechanged)
+    //connect(sender, SIGNAL(destroyed()), this, SLOT(objectDestroyed(QObject*)));
+    //connect(number, SIGNAL(setreadonceqml),this,&NFCReader::setreadonce);
 
     }
 
@@ -52,12 +72,34 @@ QString NFCReader::targetError() const           { return m_targetError;        
  // QNdefMessage NFCReader::ndefMessage() const      { return QNdefMessage(txtRecord)}
 //  lazım olunca düzenle
 //block read için deneme
-QByteArray NFCReader::targetBlock() const        { return m_targetBlock;        }
+QByteArray NFCReader::targetBlock() const         { return m_targetBlock;         }
 QByteArray NFCReader::targetBlock2() const        { return m_targetBlock2;        }
 QByteArray NFCReader::targetBlock3() const        { return m_targetBlock3;        }
 QByteArray NFCReader::targetBlock4() const        { return m_targetBlock4;        }
 QByteArray NFCReader::targetBlock5() const        { return m_targetBlock5;        }
 QByteArray NFCReader::targetBlock6() const        { return m_targetBlock6;        }
+QByteArray NFCReader::targetBlock7() const        { return m_targetBlock7;        }
+QByteArray NFCReader::targetBlock8() const        { return m_targetBlock8;        }
+QByteArray NFCReader::targetBlock9() const        { return m_targetBlock9;        }
+QByteArray NFCReader::targetBlock10() const        { return m_targetBlock10;        }
+QByteArray NFCReader::targetBlock11() const        { return m_targetBlock11;        }
+//ekran arası geçişler için
+int NFCReader::readonce() const                   { return m_readonce;            }
+//blocklar string olarak
+QString NFCReader::targetBlockAsString() const        { return m_targetBlockAsString;    }
+QString NFCReader::targetBlockAsString2() const       { return m_targetBlockAsString2;   }
+QString NFCReader::targetBlockAsString3() const       { return m_targetBlockAsString3;   }
+QString NFCReader::targetBlockAsString4() const       { return m_targetBlockAsString4;   }
+QString NFCReader::targetBlockAsString5() const       { return m_targetBlockAsString5;   }
+QString NFCReader::targetBlockAsString6() const       { return m_targetBlockAsString6;   }
+QString NFCReader::targetBlockAsString7() const       { return m_targetBlockAsString7;   }
+QString NFCReader::targetBlockAsString8() const       { return m_targetBlockAsString8;   }
+QString NFCReader::targetBlockAsString9() const       { return m_targetBlockAsString9;   }
+QString NFCReader::targetBlockAsString10() const      { return m_targetBlockAsString10;  }
+QString NFCReader::targetBlockAsString11() const      { return m_targetBlockAsString11;  }
+//ndef message falan okuma
+bool NFCReader::doHaveNdefMessage() const             { return m_doHaveNdefMessage;    }
+QString NFCReader::readNdefMessagesSend() const           { return m_readNdefMessage;       }
 
 void NFCReader::setNFCAvailable(bool isNFCAvailable)
     {
@@ -86,19 +128,22 @@ void NFCReader::scanNFCAvailability()
 void NFCReader::targetDetected(QNearFieldTarget *target)
     {
     QByteArray response;
-    QString DataAsString;
+   // QString targetBlockasString;
     connect(target,&QNearFieldTarget::requestCompleted,this,&NFCReader::readRequest);
     connect(target,&QNearFieldTarget::error,this,&NFCReader::setTargetError);
-
+    connect(target,&QNearFieldTarget::ndefMessageRead, this, &NFCReader::readNdefMessages);
     m_targetError = "";
-
-
-
+    qDebug()<<"has ndef message: " << target->hasNdefMessage();
+    if(target->hasNdefMessage()){
+        m_doHaveNdefMessage = true;
+        emit doHaveNdefMessageChanged();
+    }
     m_request = target->sendCommand(readCommand(baseblocknumber));
     if(m_request.isValid())
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock(response.toHex(' '));
+    setTargetBlockAsString(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged();
     qDebug() << response;
         }
@@ -108,6 +153,7 @@ void NFCReader::targetDetected(QNearFieldTarget *target)
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock2(response.toHex(' '));
+    setTargetBlockAsString2(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged2();
     qDebug() << response;
         }
@@ -117,6 +163,7 @@ void NFCReader::targetDetected(QNearFieldTarget *target)
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock3(response.toHex(' '));
+    setTargetBlockAsString3(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged3();
     qDebug() << response;
         }
@@ -126,6 +173,7 @@ void NFCReader::targetDetected(QNearFieldTarget *target)
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock4(response.toHex(' '));
+    setTargetBlockAsString4(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged4();
     qDebug() << response;
         }
@@ -135,6 +183,7 @@ void NFCReader::targetDetected(QNearFieldTarget *target)
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock5(response.toHex(' '));
+    setTargetBlockAsString5(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged5();
     qDebug() << response;
         }
@@ -144,10 +193,64 @@ void NFCReader::targetDetected(QNearFieldTarget *target)
         {
     response = target->requestResponse(m_request).toByteArray();
     setTargetBlock6(response.toHex(' '));
+    setTargetBlockAsString6(QString::fromStdString(response.toStdString()));
     emit targetBlockChanged6();
     qDebug() << response;
         }
 
+    m_request = target->sendCommand(readCommand(baseblocknumber+24));
+    if(m_request.isValid())
+        {
+    response = target->requestResponse(m_request).toByteArray();
+    setTargetBlock7(response.toHex(' '));
+    setTargetBlockAsString7(QString::fromStdString(response.toStdString()));
+    emit targetBlockChanged7();
+    qDebug() << response;
+        }
+
+    m_request = target->sendCommand(readCommand(baseblocknumber+28));
+    if(m_request.isValid())
+        {
+    response = target->requestResponse(m_request).toByteArray();
+    setTargetBlock8(response.toHex(' '));
+    setTargetBlockAsString8(QString::fromStdString(response.toStdString()));
+    emit targetBlockChanged8();
+    qDebug() << response;
+        }
+
+    m_request = target->sendCommand(readCommand(baseblocknumber+32));
+    if(m_request.isValid())
+        {
+    response = target->requestResponse(m_request).toByteArray();
+    setTargetBlock9(response.toHex(' '));
+    setTargetBlockAsString9(QString::fromStdString(response.toStdString()));
+    emit targetBlockChanged9();
+    qDebug() << response;
+        }
+
+    m_request = target->sendCommand(readCommand(baseblocknumber+36));
+    if(m_request.isValid())
+        {
+    response = target->requestResponse(m_request).toByteArray();
+    setTargetBlock10(response.toHex(' '));
+    setTargetBlockAsString10(QString::fromStdString(response.toStdString()));
+    emit targetBlockChanged10();
+    qDebug() << response;
+        }
+
+    m_request = target->sendCommand(readCommand(baseblocknumber+40));
+    if(m_request.isValid())
+        {
+    response = target->requestResponse(m_request).toByteArray();
+    setTargetBlock11(response.toHex(' '));
+    setTargetBlockAsString11(QString::fromStdString(response.toStdString()));
+    emit targetBlockChanged11();
+    qDebug() << response;
+        }
+
+    //read ndef part
+    m_request = target->readNdefMessages();
+  //  response = target->sendCommand(m_request);
 
 
 }
@@ -162,6 +265,7 @@ void NFCReader::infoTag(QNearFieldTarget *target)
     m_targetConnected = true;
     qDebug() <<"in infotag ---> "<< m_targetBlock;
     emit targetConnectedChanged();
+    setreadonce(1);
     }
 
 QByteArray NFCReader::readCommand(int blocknumber)
@@ -294,7 +398,7 @@ void NFCReader::targetLost(QNearFieldTarget *target)
     m_targetConnected = false;
     emit targetConnectedChanged();
 
-    setTargetUID("");
+   // setTargetUID("");
     target->deleteLater();
     }
 
@@ -340,6 +444,143 @@ void NFCReader::setTargetBlock6(QByteArray array)
             emit targetBlockChanged6();
 
     }
+void NFCReader::setTargetBlock7(QByteArray array)
+    {
+    if (m_targetBlock7 == array) return;
+            m_targetBlock7 = array;
+            emit targetBlockChanged7();
+
+    }
+void NFCReader::setTargetBlock8(QByteArray array)
+    {
+    if (m_targetBlock8 == array) return;
+            m_targetBlock8 = array;
+            emit targetBlockChanged8();
+
+    }
+void NFCReader::setTargetBlock9(QByteArray array)
+    {
+    if (m_targetBlock9 == array) return;
+            m_targetBlock9 = array;
+            emit targetBlockChanged9();
+
+    }
+void NFCReader::setTargetBlock10(QByteArray array)
+    {
+    if (m_targetBlock10 == array) return;
+            m_targetBlock10 = array;
+            emit targetBlockChanged10();
+
+    }
+void NFCReader::setTargetBlock11(QByteArray array)
+    {
+    if (m_targetBlock11 == array) return;
+            m_targetBlock11 = array;
+            emit targetBlockChanged11();
+
+    }
+// blockları string yapma kısmı
+void NFCReader::setTargetBlockAsString(QString str)
+{
+    if (m_targetBlockAsString == str) return;
+    m_targetBlockAsString = str;
+    emit targetBlockAsStringChanged();
+
+}
+void NFCReader::setTargetBlockAsString2(QString str)
+{
+    if (m_targetBlockAsString2 == str) return;
+    m_targetBlockAsString2 = str;
+    emit targetBlockAsStringChanged2();
+
+}
+void NFCReader::setTargetBlockAsString3(QString str)
+{
+    if (m_targetBlockAsString3 == str) return;
+    m_targetBlockAsString3 = str;
+    emit targetBlockAsStringChanged3();
+
+}
+void NFCReader::setTargetBlockAsString4(QString str)
+{
+    if (m_targetBlockAsString4 == str) return;
+    m_targetBlockAsString4 = str;
+    emit targetBlockAsStringChanged4();
+
+}
+void NFCReader::setTargetBlockAsString5(QString str)
+{
+    if (m_targetBlockAsString5 == str) return;
+    m_targetBlockAsString5 = str;
+    emit targetBlockAsStringChanged5();
+
+}
+void NFCReader::setTargetBlockAsString6(QString str)
+{
+    if (m_targetBlockAsString6 == str) return;
+    m_targetBlockAsString6 = str;
+    emit targetBlockAsStringChanged6();
+
+}
+void NFCReader::setTargetBlockAsString7(QString str)
+{
+    if (m_targetBlockAsString7 == str) return;
+    m_targetBlockAsString7 = str;
+    emit targetBlockAsStringChanged7();
+
+}
+void NFCReader::setTargetBlockAsString8(QString str)
+{
+    if (m_targetBlockAsString8 == str) return;
+    m_targetBlockAsString8 = str;
+    emit targetBlockAsStringChanged8();
+
+}
+void NFCReader::setTargetBlockAsString9(QString str)
+{
+    if (m_targetBlockAsString9 == str) return;
+    m_targetBlockAsString9 = str;
+    emit targetBlockAsStringChanged9();
+
+}void NFCReader::setTargetBlockAsString10(QString str)
+{
+    if (m_targetBlockAsString10 == str) return;
+    m_targetBlockAsString10 = str;
+    emit targetBlockAsStringChanged10();
+
+}
+void NFCReader::setTargetBlockAsString11(QString str)
+{
+    if (m_targetBlockAsString11 == str) return;
+    m_targetBlockAsString11 = str;
+    emit targetBlockAsStringChanged11();
+
+}
+void NFCReader::readNdefMessages(const QNdefMessage &msg)
+{
+    /*A QNdefMessage is a collection of 0 or more QNdefRecords.
+     * QNdefMessage inherits from QList<QNdefRecord> and
+     * therefore the standard QList functions can be used to manipulate
+     * the NDEF records in the message.*/
+
+    for (const QNdefRecord &record : msg){
+        if (record.isRecordType<QNdefNfcTextRecord>()){
+           QNdefNfcTextRecord textRecord(record);
+           qDebug() << textRecord.text();
+           m_readNdefMessage = textRecord.text();
+           emit readNdefMessagesChanged();
+        }
+    }
+}
+
+void NFCReader::setreadonce(int readonce)
+{
+    if(m_readonce == readonce) return;
+    m_readonce = readonce;
+    qDebug() << "readonce:   " << readonce;
+    qDebug() << "m_readonce: " << m_readonce;
+    emit readoncechanged();
+}
 
 
 

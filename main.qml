@@ -8,7 +8,7 @@ ApplicationWindow {
     property bool portaitMode: Screen.desktopAvailableHeight > Screen.desktopAvailableWidth
 
     background: Rectangle{
-          color: "#daf8e3"
+          color: "#dfe3ee"
     }
 
     Item {

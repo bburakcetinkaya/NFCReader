@@ -3,7 +3,7 @@ Item {
     anchors.fill: parent
     states: [
         State {
-            when: NFCReader.targetConnected
+            when: NFCReader.targetConnected || (NFCReader.readonce == 1)
             PropertyChanges {
                 target: tagConnected
                 visible: true

@@ -6,7 +6,8 @@
         <file>TagErrorField.qml</file>
         <file>NFCTechNotSupported.qml</file>
         <file>NFCTechSupported.qml</file>
-        <file>TagConnected.qml</file>
         <file>TagNotConnected.qml</file>
+        <file>TabWidget.qml</file>
+        <file>TagConnected.qml</file>
     </qresource>
 </RCC>

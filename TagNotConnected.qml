@@ -19,7 +19,7 @@ Item {
         text: NFCReader.nfcNotAvailableMessage
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        color: "#0086ad"
+        color: "#3b5998"
         font.pixelSize: 30
         font.capitalization: Font.AllUppercase
         fontSizeMode: Text.Fit
@@ -35,7 +35,7 @@ Item {
         text: NFCReader.targetDetectingMessage
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        color: "#0086ad"
+        color: "#3b5998"
         font.pixelSize: 30
         font.capitalization: Font.AllUppercase
         fontSizeMode: Text.Fit

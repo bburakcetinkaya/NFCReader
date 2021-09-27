@@ -7,7 +7,7 @@ Rectangle {
   height: parent.height *0.10
   anchors.horizontalCenter: parent.horizontalCenter
   radius: 1
-  color: "black" //"#daf8e3"
+  color: "transparent" //"#daf8e3"
   visible: NFCReader.targetError !== "" ? true : false
 
   Label {

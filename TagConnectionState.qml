@@ -8,7 +8,7 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.bottomMargin: parent.height * 0.02
     radius: 2
-    border.color: "#daf8e3"
+    border.color: "transparent"
     border.width: 2
 
     states: [
@@ -16,7 +16,7 @@ Rectangle {
             when : !NFCReader.targetConnected
             PropertyChanges {
                 target: tagconnectivity
-                color: "#daf8e3"
+                color: "transparent"
             }
             PropertyChanges {
                 target: txtTagConnectivity
@@ -28,7 +28,7 @@ Rectangle {
             when : NFCReader.targetConnected
             PropertyChanges {
                 target: tagconnectivity
-                color: "#daf8e3"
+                color: "transparent"
             }
             PropertyChanges {
                 target: txtTagConnectivity

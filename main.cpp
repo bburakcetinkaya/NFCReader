@@ -3,7 +3,7 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QtAndroid>
-#include <QbyteArray>
+#include <QByteArray>
 #include "NFCReader.h"
 
 int main (int argc, char *argv[])
