@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>nfcFounding.png</file>
+        <file>nfc_off.png</file>
+    </qresource>
+</RCC>

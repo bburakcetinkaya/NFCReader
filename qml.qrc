@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>InfoTagRow.qml</file>
+        <file>TagConnectionState.qml</file>
+        <file>TagErrorField.qml</file>
+        <file>NFCTechNotSupported.qml</file>
+        <file>NFCTechSupported.qml</file>
+        <file>TagNotConnected.qml</file>
+        <file>TagConnected.qml</file>
+        <file>RawData.qml</file>
+        <file>NdefDataOperations.qml</file>
+        <file>GeneralInfo.qml</file>
+        <file>HeaderModel.qml</file>
+    </qresource>
+</RCC>
